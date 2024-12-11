@@ -3,7 +3,7 @@ import Category from './components/admin/category/Category';
 
 function App() {
   return (
-    <div style={{fontFamily:'Oswald'}}>
+    <div style={{fontFamily:'Kanit'}}>
       <Category />
     </div>
   );
