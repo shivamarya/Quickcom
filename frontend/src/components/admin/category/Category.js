@@ -2,8 +2,8 @@ import { Button, Grid, TextField, Avatar } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import logo from "../../../assets/logo.png";
 import cart from "../../../assets/cart.png";
-
 import { useState } from "react";
+import { postData,currentDate } from "../../../services/FetchNodeAdminServices";
 var userStyles = makeStyles({
   root: {
     width: "100%",
@@ -40,6 +40,8 @@ var userStyles = makeStyles({
   },
 });
 function Category(props) {
+  var classes = userStyles();
+
   const [categoryName, setCategoryName] = useState();
   const [categoryIcon, setCategoryIcon] = useState({
     bytes: "",
@@ -51,7 +53,18 @@ function Category(props) {
       fileName: URL.createObjectURL(e.target.files[0]),
     });
   };
-  var classes = userStyles();
+  const handleSubmit = async()=>{
+      var formData = new FormData();
+      formData.append('categoryname',categoryName);
+      formData.append('categoryicon',categoryIcon.bytes);
+      formData.append('created_at',currentDate());
+      formData.append('updated_at',currentDate());
+      formData.append('user_admin','Shivam');
+
+
+      var result=await postData('category/category_submit',formData);
+      alert(result.message);
+  }
   return (
     <div className={classes.root}>
       <div className={classes.box}>
@@ -65,12 +78,7 @@ function Category(props) {
             </div>
           </Grid>
           <Grid item xs={12}>
-            <TextField
-              onChange={(e) => setCategoryName(e.target.value)}
-              label="Category Name"
-              value={categoryName}
-              fullWidth
-            />
+            <TextField onChange={(e) => setCategoryName(e.target.value)} label="Category Name" value={categoryName} fullWidth />
           </Grid>
           <Grid item xs={6} className={classes.center}>
             <Button variant="contained" component="label">
@@ -82,7 +90,7 @@ function Category(props) {
             <Avatar src={categoryIcon.fileName} variant="rounded" />
           </Grid>
           <Grid item xs={6} className={classes.center}>
-            <Button variant="contained">Submit</Button>
+            <Button variant="contained" onClick={handleSubmit}>Submit</Button>
           </Grid>
           <Grid item xs={6} className={classes.center}>
             <Button variant="contained">Reset</Button>
