@@ -45,9 +45,23 @@ var userStyles = makeStyles({
 function Category(props) {
   var classes = userStyles();
 
-  const [categoryName, setCategoryName] = useState();
+  const [categoryName, setCategoryName] = useState('');
   const [loadingStatus, setLoadingStatus] = useState(false);
+  const [errorMessages,setErrorMessages] = useState({});
+  const handleErrorMessages=(label,message)=>{
+      var msg = errorMessages
+      msg[label]=message
+      setErrorMessages(msg)
+  }
+  const validateData=()=>{
+    var err=false
+    if(categoryName.length==0){
+      setErrorMessages({...errorMessages,categoryName:'please input categoryname'});
+      err=true;
 
+    }
+    return err
+  }
   const [categoryIcon, setCategoryIcon] = useState({
     bytes: "",
     fileName: cart,
@@ -63,6 +77,10 @@ function Category(props) {
     setCategoryIcon({bytes: '',fileName: cart});
   }
   const handleSubmit = async()=>{
+    var err=validateData();
+    if(err==false){
+
+    
     setLoadingStatus(true);
       var formData = new FormData();
       formData.append('categoryname',categoryName);
@@ -95,6 +113,7 @@ function Category(props) {
       }
       setLoadingStatus(false);
       resetValue();
+    }
   }
   const handleReset=()=>{
     resetValue()
@@ -112,7 +131,7 @@ function Category(props) {
             </div>
           </Grid>
           <Grid item xs={12}>
-            <TextField error={false}  helperText="Please input Category Name" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
+            <TextField onFocus={()=>handleErrorMessages('categoryname','')} error={errorMessages?.categoryName}  helperText={errorMessages?.categoryName} value={categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
           </Grid>
           <Grid item xs={6} className={classes.center}>
             <Button variant="contained" component="label">
