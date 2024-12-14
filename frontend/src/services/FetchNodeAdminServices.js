@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const serverURL = 'http://localhost:5000/';
+const serverURL = 'http://localhost:5000';
 
 const currentDate=()=>{
     var d=new Date();

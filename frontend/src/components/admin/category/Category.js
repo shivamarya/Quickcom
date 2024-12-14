@@ -1,8 +1,11 @@
-import { Button, Grid, TextField, Avatar } from "@mui/material";
 import { makeStyles } from "@mui/styles";
+import { Button, Grid, TextField, Avatar } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 import logo from "../../../assets/logo.png";
 import cart from "../../../assets/cart.png";
+import SaveIcon from '@mui/icons-material/Save';
 import { useState } from "react";
+import Swal from "sweetalert2";
 import { postData,currentDate } from "../../../services/FetchNodeAdminServices";
 var userStyles = makeStyles({
   root: {
@@ -18,7 +21,7 @@ var userStyles = makeStyles({
     height: "auto",
     padding: 10,
     margin: 10,
-    backgroundColor: "#dfe4ea",
+    backgroundColor: "#f7f1e3",
   },
   headingStyle: {
     fontSize: 24,
@@ -43,6 +46,8 @@ function Category(props) {
   var classes = userStyles();
 
   const [categoryName, setCategoryName] = useState();
+  const [loadingStatus, setLoadingStatus] = useState(false);
+
   const [categoryIcon, setCategoryIcon] = useState({
     bytes: "",
     fileName: cart,
@@ -53,7 +58,12 @@ function Category(props) {
       fileName: URL.createObjectURL(e.target.files[0]),
     });
   };
+  const resetValue =()=>{
+    setCategoryName('')
+    setCategoryIcon({bytes: '',fileName: cart});
+  }
   const handleSubmit = async()=>{
+    setLoadingStatus(true);
       var formData = new FormData();
       formData.append('categoryname',categoryName);
       formData.append('categoryicon',categoryIcon.bytes);
@@ -63,7 +73,31 @@ function Category(props) {
 
 
       var result=await postData('category/category_submit',formData);
-      alert(result.message);
+      if(result.status){
+        Swal.fire({
+          // position: "top-end",
+          icon: "success",
+          title: result.message,
+          showConfirmButton: false,
+          timer: 2000,
+          toast:false
+        });
+        
+      }else{
+        Swal.fire({
+          // position: "top-end",
+          icon: "error",
+          title: result.message,
+          showConfirmButton: false,
+          timer: 2000,
+          toast:false
+        });
+      }
+      setLoadingStatus(false);
+      resetValue();
+  }
+  const handleReset=()=>{
+    resetValue()
   }
   return (
     <div className={classes.root}>
@@ -78,7 +112,7 @@ function Category(props) {
             </div>
           </Grid>
           <Grid item xs={12}>
-            <TextField onChange={(e) => setCategoryName(e.target.value)} label="Category Name" value={categoryName} fullWidth />
+            <TextField error={false}  helperText="Please input Category Name" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
           </Grid>
           <Grid item xs={6} className={classes.center}>
             <Button variant="contained" component="label">
@@ -87,13 +121,23 @@ function Category(props) {
             </Button>
           </Grid>
           <Grid item xs={6} className={classes.center}>
-            <Avatar src={categoryIcon.fileName} variant="rounded" />
+            <Avatar src={categoryIcon.fileName}  style={{width:70,height:70}} variant="rounded"  />
           </Grid>
           <Grid item xs={6} className={classes.center}>
-            <Button variant="contained" onClick={handleSubmit}>Submit</Button>
+            {/* <Button variant="contained" onClick={handleSubmit}>Submit</Button> */}
+            <LoadingButton
+              loading={loadingStatus}
+              loadingPosition="start"
+              startIcon={<SaveIcon />}
+              variant="contained"
+              onClick={handleSubmit}
+            >
+              Save
+            </LoadingButton>
+
           </Grid>
           <Grid item xs={6} className={classes.center}>
-            <Button variant="contained">Reset</Button>
+            <Button onClick={handleReset} variant="contained">Reset</Button>
           </Grid>
         </Grid>
       </div>
