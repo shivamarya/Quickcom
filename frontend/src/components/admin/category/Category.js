@@ -41,6 +41,8 @@ var userStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
   },
+  errorMessageStyle:
+      {color: '#d32f2f',"fontFamily":"\"Roboto\", \"Helvetica\", \"Arial\", sans-serif","fontWeight":"400","fontSize":"0.75rem","lineHeight":"1.66","letterSpacing":"0.03333em","textAlign":"left","marginTop":"3px","marginRight":"14px","marginBottom":"0","marginLeft":"14px"}
 });
 function Category(props) {
   var classes = userStyles();
@@ -51,15 +53,22 @@ function Category(props) {
   const handleErrorMessages=(label,message)=>{
       var msg = errorMessages
       msg[label]=message
-      setErrorMessages(msg)
+      setErrorMessages((prev)=>({...prev,...msg}))
   }
   const validateData=()=>{
     var err=false
     if(categoryName.length==0){
-      setErrorMessages({...errorMessages,categoryName:'please input categoryname'});
+      // setErrorMessages({...errorMessages,categoryName:'please input categoryname'});
+      handleErrorMessages('categoryName','please input categoryname');
       err=true;
 
     }
+    if(categoryIcon.bytes.length==0){
+      handleErrorMessages('categoryIcon','please input categoryIcon');
+      err=true;
+
+    }
+
     return err
   }
   const [categoryIcon, setCategoryIcon] = useState({
@@ -67,6 +76,7 @@ function Category(props) {
     fileName: cart,
   });
   const handleImage = (e) => {
+    handleErrorMessages('categoryIcon',null);
     setCategoryIcon({
       bytes: e.target.files[0],
       fileName: URL.createObjectURL(e.target.files[0]),
@@ -131,13 +141,16 @@ function Category(props) {
             </div>
           </Grid>
           <Grid item xs={12}>
-            <TextField onFocus={()=>handleErrorMessages('categoryname','')} error={errorMessages?.categoryName}  helperText={errorMessages?.categoryName} value={categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
+            <TextField onFocus={()=>handleErrorMessages('categoryName',null)} error={errorMessages?.categoryName} helperText={errorMessages?.categoryName} value={categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
           </Grid>
           <Grid item xs={6} className={classes.center}>
+          <div style={{display:'flex',flexDirection:'column'}}>        
             <Button variant="contained" component="label">
               Upload
               <input onChange={handleImage} type="file" accept="image/*" hidden multiple />
             </Button>
+            <div className={classes.errorMessageStyle}>{errorMessages?.categoryIcon!=null?errorMessages?.categoryIcon:<></>}</div>
+            </div>
           </Grid>
           <Grid item xs={6} className={classes.center}>
             <Avatar src={categoryIcon.fileName}  style={{width:70,height:70}} variant="rounded"  />
