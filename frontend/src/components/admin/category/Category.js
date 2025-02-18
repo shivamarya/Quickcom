@@ -1,4 +1,4 @@
-import { makeStyles } from "@mui/styles";
+
 import { Button, Grid, TextField, Avatar } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import logo from "../../../assets/logo.png";
@@ -7,43 +7,9 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { postData,currentDate } from "../../../services/FetchNodeAdminServices";
-var userStyles = makeStyles({
-  root: {
-    width: "100%",
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  box: {
-    width: 500,
-    height: "auto",
-    padding: 10,
-    margin: 10,
-    backgroundColor: "#f7f1e3",
-  },
-  headingStyle: {
-    fontSize: 24,
-    marginLeft: 10,
-  },
-  imageStyle: {
-    width: 65,
-    height: 45,
-  },
-  mainHeadingstyle: {
-    display: "flex",
-    alignItems: "center",
-    padding: 5,
-  },
-  center: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  errorMessageStyle:
-      {color: '#d32f2f',"fontFamily":"\"Roboto\", \"Helvetica\", \"Arial\", sans-serif","fontWeight":"400","fontSize":"0.75rem","lineHeight":"1.66","letterSpacing":"0.03333em","textAlign":"left","marginTop":"3px","marginRight":"14px","marginBottom":"0","marginLeft":"14px"}
-});
+import userStyles from "./CategoryCss";
+
+// Component
 function Category(props) {
   var classes = userStyles();
 
@@ -55,7 +21,9 @@ function Category(props) {
       msg[label]=message
       setErrorMessages((prev)=>({...prev,...msg}))
   }
-  const validateData=()=>{
+
+// Validate the data
+const validateData=()=>{
     var err=false
     if(categoryName.length==0){
       // setErrorMessages({...errorMessages,categoryName:'please input categoryname'});
@@ -71,10 +39,14 @@ function Category(props) {
 
     return err
   }
+
+  // State for the category icon
   const [categoryIcon, setCategoryIcon] = useState({
     bytes: "",
     fileName: cart,
   });
+
+  // Handle the image
   const handleImage = (e) => {
     handleErrorMessages('categoryIcon',null);
     setCategoryIcon({
@@ -82,15 +54,18 @@ function Category(props) {
       fileName: URL.createObjectURL(e.target.files[0]),
     });
   };
+
+  // Reset the value
   const resetValue =()=>{
     setCategoryName('')
     setCategoryIcon({bytes: '',fileName: cart});
   }
+
+  // Handle the submit
   const handleSubmit = async()=>{
     var err=validateData();
     if(err==false){
 
-    
     setLoadingStatus(true);
       var formData = new FormData();
       formData.append('categoryname',categoryName);
@@ -125,9 +100,12 @@ function Category(props) {
       resetValue();
     }
   }
+
+  // Reset the value
   const handleReset=()=>{
     resetValue()
   }
+  console.log(errorMessages);
   return (
     <div className={classes.root}>
       <div className={classes.box}>

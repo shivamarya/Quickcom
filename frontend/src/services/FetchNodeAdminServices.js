@@ -9,6 +9,13 @@ const currentDate=()=>{
     return (cd+ " " +ct);
 }
 
+const createDate=(date)=>{
+  var d=new Date(date);
+  var cd = d.getFullYear()+"-"+(d.getMonth()+1) + "-" + d.getDate();
+  var ct = d.getHours() +":" +d.getMinutes() +":" + d.getSeconds();
+  return (cd+ " " +ct);
+}
+
 const postData = async (url, body) => {
   try {
     var response = await axios.post(`${serverURL}/${url}`, body);
@@ -19,4 +26,14 @@ const postData = async (url, body) => {
   }
 };
 
-export {postData,serverURL,currentDate};
+const getData = async (url) => {
+  try {
+    var response = await axios.get(`${serverURL}/${url}`);
+    var result = response.data;
+    return result;
+  } catch (e) {
+    return e.response.data;
+  }
+};
+
+export {postData,serverURL,currentDate,getData,createDate};
