@@ -1,6 +1,6 @@
 import { useState,useEffect, use } from "react";
 import MaterialTable from '@material-table/core'
-import { getData, serverURL, createDate } from "../../../services/FetchNodeAdminServices";
+import { getData, serverURL, createDate,postData,currentDate } from "../../../services/FetchNodeAdminServices";
 import userStyles from "./CategoryCss";
 import { Button, Grid, TextField,Avatar, Dialog,DialogContent, DialogActions } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
@@ -15,15 +15,27 @@ function DisplayAllCategory(){
     const [open, setOpen] = useState(false);
 
     /* -------------------------------------- Fetch all category Start ------------------------------------------ */
-
+    const [categoryId, setCategoryId] = useState('');
     const [categoryName, setCategoryName] = useState('');
-      const [loadingStatus, setLoadingStatus] = useState(false);
-      const [errorMessages,setErrorMessages] = useState({});
+    const [loadingStatus, setLoadingStatus] = useState(false);
+    const [errorMessages,setErrorMessages] = useState({});
+    const [hideUploadButton,setHideUploadButton]=useState(false);
+
+      // const [categoryData,setCategoryData]=useState([]);
       const handleErrorMessages=(label,message)=>{
           var msg = errorMessages
           msg[label]=message
           setErrorMessages((prev)=>({...prev,...msg}))
       }
+
+    const showSaveCancelData=()=>{
+      return(
+        <div>
+          <Button>Save</Button>
+          <Button>Cancel</Button>
+        </div>
+      )
+    }
     
     // Validate the data
     const validateData=()=>{
@@ -34,11 +46,11 @@ function DisplayAllCategory(){
           err=true;
     
         }
-        if(categoryIcon.bytes.length==0){
-          handleErrorMessages('categoryIcon','please input categoryIcon');
-          err=true;
+        // if(categoryIcon.bytes.length==0){
+        //   handleErrorMessages('categoryIcon','please input categoryIcon');
+        //   err=true;
     
-        }
+        // }
     
         return err
       }
@@ -56,9 +68,11 @@ function DisplayAllCategory(){
           bytes: e.target.files[0],
           fileName: URL.createObjectURL(e.target.files[0]),
         });
+        setHideUploadButton(true);
       };   
     
       const CategoryForm=()=>{ 
+        // alert(JSON.stringify(categoryData));
         return (
               <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -70,35 +84,22 @@ function DisplayAllCategory(){
                   </div>
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField onFocus={()=>handleErrorMessages('categoryName',null)} error={errorMessages?.categoryName} helperText={errorMessages?.categoryName} value={categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
+                  <TextField value={categoryName} onFocus={()=>handleErrorMessages('categoryName',null)} error={errorMessages?.categoryName} helperText={errorMessages?.categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
                 </Grid>
                 <Grid item xs={6} className={classes.center}>
-                <div style={{display:'flex',flexDirection:'column'}}>        
+                <div style={{display:'flex',flexDirection:'column'}}>  
+                  {hideUploadButton?<div>{showSaveCancelData()}</div>:
+                  
                   <Button variant="contained" component="label">
-                    Upload
-                    <input onChange={handleImage} type="file" accept="image/*" hidden multiple />
-                  </Button>
+                  Upload
+                  <input onChange={handleImage} type="file" accept="image/*" hidden multiple />
+                </Button>}      
+                 
                   <div className={classes.errorMessageStyle}>{errorMessages?.categoryIcon!=null?errorMessages?.categoryIcon:<></>}</div>
                   </div>
                 </Grid>
                 <Grid item xs={6} className={classes.center}>
                   <Avatar src={categoryIcon.fileName}  style={{width:70,height:70}} variant="rounded"  />
-                </Grid>
-                <Grid item xs={6} className={classes.center}>
-                  {/* <Button variant="contained" onClick={handleSubmit}>Submit</Button> */}
-                  <LoadingButton
-                    loading={loadingStatus}
-                    loadingPosition="start"
-                    startIcon={<SaveIcon />}
-                    variant="contained"
-                    // onClick={handleSubmit}
-                  >
-                    Edit
-                  </LoadingButton>
-      
-                </Grid>
-                <Grid item xs={6} className={classes.center}>
-                  <Button variant="contained">Delete</Button>
                 </Grid>
               </Grid>
         );
@@ -121,14 +122,55 @@ function DisplayAllCategory(){
 
 
     // Dialog Box
-    const handleOpenDialog = () => {
-      setOpen(true);
-    }
+    const handleOpenDialog=(rowData)=>{
+      setCategoryId(rowData.categoryid)
+      setCategoryName(rowData.categoryname)
+      setOpen(true)
+      }
+      
 
     const handleCloseDialog = () => {
       setOpen(false);
     }
-    const showCategoryDialog=(rowData)=>{
+
+      // Handle the submit
+  const handleEditData = async()=>{
+    var err=validateData();
+    if(err==false){
+
+    setLoadingStatus(true);
+      var body = {'categoryid':categoryId,'categoryname':categoryName,'updated_at':currentDate(),'user_admin':'Shivam'};
+
+
+      var result=await postData('category/edit_category_data',body);
+      if(result.status){
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: result.message,
+          showConfirmButton: false,
+          timer: 2000,
+          toast:true
+        });
+        
+      }else{
+        Swal.fire({
+          position: "top-end",
+          icon: "error",
+          title: result.message,
+          showConfirmButton: false,
+          timer: 2000,
+          toast:true
+        });
+      }
+      setLoadingStatus(false);
+    }
+    fetchAllCategory();
+    // setOpen(false);
+  }
+
+    // Show the dialog box
+    const showCategoryDialog=()=>{
       return(
         <div>
           <Dialog open={open} onClose={handleOpenDialog}>
@@ -136,7 +178,18 @@ function DisplayAllCategory(){
               {CategoryForm()}
             </DialogContent>   
             <DialogActions>
+            <LoadingButton
+                    loading={loadingStatus}
+                    loadingPosition="start"
+                    startIcon={<SaveIcon />}
+                    variant="contained"
+                    onClick={handleEditData}
+                  >
+                    Edit Data
+                  </LoadingButton>
+              <Button>Delete</Button>
               <Button onClick={handleCloseDialog}>Close</Button>
+
             </DialogActions>           
           </Dialog>
         </div>
@@ -169,7 +222,7 @@ function DisplayAllCategory(){
               {
                 icon: 'edit',
                 tooltip: 'Edit Category',
-                onClick: (event, rowData) => handleOpenDialog()
+                onClick: (event, rowData) => handleOpenDialog(rowData)
               }
             ]}
           />
