@@ -2,12 +2,14 @@ import { useState,useEffect, use } from "react";
 import MaterialTable from '@material-table/core'
 import { getData, serverURL, createDate,postData,currentDate } from "../../../services/FetchNodeAdminServices";
 import userStyles from "./CategoryCss";
-import { Button, Grid, TextField,Avatar, Dialog,DialogContent, DialogActions } from "@mui/material";
+import { IconButton,Button, Grid, TextField,Avatar, Dialog,DialogContent, DialogActions } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import logo from "../../../assets/logo.png";
 import cart from "../../../assets/cart.png";
 import SaveIcon from '@mui/icons-material/Save';
 import Swal from "sweetalert2";
+import CloseIcon from '@mui/icons-material/Close';
+
 
 function DisplayAllCategory(){
   const classes=userStyles();
@@ -18,8 +20,10 @@ function DisplayAllCategory(){
     const [categoryId, setCategoryId] = useState('');
     const [categoryName, setCategoryName] = useState('');
     const [loadingStatus, setLoadingStatus] = useState(false);
+    const [categoryIcon, setCategoryIcon] = useState({bytes: "",fileName: cart,});
     const [errorMessages,setErrorMessages] = useState({});
     const [hideUploadButton,setHideUploadButton]=useState(false);
+    const [oldImage,setOldimage]=useState('');
 
       // const [categoryData,setCategoryData]=useState([]);
       const handleErrorMessages=(label,message)=>{
@@ -31,8 +35,8 @@ function DisplayAllCategory(){
     const showSaveCancelData=()=>{
       return(
         <div>
-          <Button>Save</Button>
-          <Button>Cancel</Button>
+          <Button onClick={handleEditIcon}>Save</Button>
+          <Button onClick={handleCancelIcon}>Cancel</Button>
         </div>
       )
     }
@@ -54,12 +58,6 @@ function DisplayAllCategory(){
     
         return err
       }
-    
-      // State for the category icon
-      const [categoryIcon, setCategoryIcon] = useState({
-        bytes: "",
-        fileName: cart,
-      });
     
       // Handle the image
       const handleImage = (e) => {
@@ -125,12 +123,21 @@ function DisplayAllCategory(){
     const handleOpenDialog=(rowData)=>{
       setCategoryId(rowData.categoryid)
       setCategoryName(rowData.categoryname)
+      setCategoryIcon({bytes:'',fileName:`${serverURL}/images/${rowData.categoryicon}`})
+      setOldimage(`${serverURL}/images/${rowData.categoryicon}`);
       setOpen(true)
+
       }
       
 
     const handleCloseDialog = () => {
       setOpen(false);
+    }
+
+
+    const handleCancelIcon = () => {
+      setCategoryIcon({bytes:'',fileName:oldImage})
+      setHideUploadButton(false)
     }
 
       // Handle the submit
@@ -169,11 +176,120 @@ function DisplayAllCategory(){
     // setOpen(false);
   }
 
+
+  const handleEditIcon=async()=>{
+   
+    setLoadingStatus(true)
+    var formData=new FormData()
+    formData.append('categoryicon',categoryIcon.bytes)
+    formData.append('updated_at',currentDate())
+    formData.append('user_admin','Farzi')
+    formData.append('categoryid',categoryId)
+    
+    var result=await postData('category/edit_category_icon',formData)
+    if(result.status)
+    {
+        Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: result.message,
+            showConfirmButton: false,
+            timer: 2000,
+            toast:true
+          });
+          
+       }
+       else
+       {
+        Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: result.message,
+            showConfirmButton: false,
+            timer: 2000,
+            toast:true
+          });
+       }
+       setLoadingStatus(false)
+       setHideUploadButton(false)
+   
+    fetchAllCategory()
+    }
+
+    // delete category
+
+    const categoryDelete=async()=>{
+      setLoadingStatus(true)
+      var body={'categoryid':categoryId}    
+      
+      var result=await postData('category/delete_category',body)
+      if(result.status)
+      {
+          Swal.fire({
+              position: "top-end",
+              icon: "success",
+              title: result.message,
+              showConfirmButton: false,
+              timer: 2000,
+              toast:true
+            });
+            
+         }
+         else
+         {
+          Swal.fire({
+              position: "top-end",
+              icon: "error",
+              title: result.message,
+              showConfirmButton: false,
+              timer: 2000,
+              toast:true
+            });
+         }
+         setLoadingStatus(false)
+         setHideUploadButton(false)
+     
+      fetchAllCategory()
+         
+    }
+
+    const handleDeleteCategory=async()=>{
+
+      Swal.fire({
+        title: "Do you want to delete the category?",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+        denyButtonText: `Don't delete`
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          categoryDelete();
+        } else if (result.isDenied) {
+          Swal.fire("Category not deleted", "", "info");
+        }
+      });
+   
+ 
+      }
+  
     // Show the dialog box
     const showCategoryDialog=()=>{
       return(
         <div>
           <Dialog open={open} onClose={handleOpenDialog}>
+          <IconButton
+          aria-label="close"
+          onClick={handleCloseDialog}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
             <DialogContent>
               {CategoryForm()}
             </DialogContent>   
@@ -187,8 +303,8 @@ function DisplayAllCategory(){
                   >
                     Edit Data
                   </LoadingButton>
-              <Button>Delete</Button>
-              <Button onClick={handleCloseDialog}>Close</Button>
+              <Button onClick={handleDeleteCategory} >Delete</Button>
+              {/* <Button onClick={handleCloseDialog}>Close</Button> */}
 
             </DialogActions>           
           </Dialog>

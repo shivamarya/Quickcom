@@ -67,4 +67,49 @@ router.post('/edit_category_data', function (req, res, next) {
   }
 });
 
+
+// edit category picture
+router.post('/edit_category_icon',upload.single('categoryicon'), function (req, res, next) {
+  try {
+    pool.query("update category set categoryicon=?,updated_at=?,user_admin=? where categoryid=?", [req.file.filename, req.body.updated_at, req.body.user_admin,req.body.categoryid], function (error, result) {
+      if (error) {
+        console.log(error)
+        res.status(200).json({ message: 'Database Error Pls contact with backend team...', status: false })
+      }
+      else {
+        res.status(200).json({ message: 'Category icon updated successfully', status: true })
+      }
+
+    })
+
+  }
+  catch (e) {
+
+    res.status(200).json({ message: 'Severe error on server pls contact with backend team', status: false })
+  }
+});
+
+
+// Delete category
+router.post('/delete_category' ,function (req, res, next) {
+  try {
+    pool.query("delete from category where categoryid=?", [req.body.categoryid], function (error, result) {
+      if (error) {
+        console.log(error)
+        res.status(200).json({ message: 'Database Error Pls contact with backend team...', status: false })
+      }
+      else {
+        res.status(200).json({ message: 'Category Deleted successfully', status: true })
+      }
+
+    })
+
+  }
+  catch (e) {
+
+    res.status(200).json({ message: 'Severe error on server pls contact with backend team', status: false })
+  }
+});
+
+
 module.exports = router;
