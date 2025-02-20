@@ -49,7 +49,7 @@ router.get('/display_all_category', function (req, res, next) {
 // edit category
 router.post('/edit_category_data', function (req, res, next) {
   try {
-    pool.query("update category set categoryname=?,updated_at=?,user_admin=? where categoryid=?", [req.body.categoryname, req.body.updated_at, req.body.user_admin,req.body.categoryid], function (error, result) {
+    pool.query("update category set categoryname=?,updated_at=?,user_admin=? where categoryid=?", [req.body.categoryname, req.body.updated_at, req.body.user_admin, req.body.categoryid], function (error, result) {
       if (error) {
         console.log(error)
         res.status(200).json({ message: 'Database Error Pls contact with backend team...', status: false })
@@ -69,9 +69,9 @@ router.post('/edit_category_data', function (req, res, next) {
 
 
 // edit category picture
-router.post('/edit_category_icon',upload.single('categoryicon'), function (req, res, next) {
+router.post('/edit_category_icon', upload.single('categoryicon'), function (req, res, next) {
   try {
-    pool.query("update category set categoryicon=?,updated_at=?,user_admin=? where categoryid=?", [req.file.filename, req.body.updated_at, req.body.user_admin,req.body.categoryid], function (error, result) {
+    pool.query("update category set categoryicon=?,updated_at=?,user_admin=? where categoryid=?", [req.file.filename, req.body.updated_at, req.body.user_admin, req.body.categoryid], function (error, result) {
       if (error) {
         console.log(error)
         res.status(200).json({ message: 'Database Error Pls contact with backend team...', status: false })
@@ -91,7 +91,7 @@ router.post('/edit_category_icon',upload.single('categoryicon'), function (req, 
 
 
 // Delete category
-router.post('/delete_category' ,function (req, res, next) {
+router.post('/delete_category', function (req, res, next) {
   try {
     pool.query("delete from category where categoryid=?", [req.body.categoryid], function (error, result) {
       if (error) {
