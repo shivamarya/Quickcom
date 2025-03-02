@@ -1,7 +1,7 @@
 import { useState, useEffect, use } from "react";
 import MaterialTable from '@material-table/core'
 import { getData, serverURL, createDate, postData, currentDate } from "../../../services/FetchNodeAdminServices";
-import userStyles from "./CategoryCss";
+import userStyles from "../category/CategoryCss";
 import { IconButton, Button, Grid, TextField, Avatar, Dialog, DialogContent, DialogActions } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import logo from "../../../assets/logo.png";
@@ -11,16 +11,17 @@ import Swal from "sweetalert2";
 import CloseIcon from '@mui/icons-material/Close';
 
 
-function DisplayAllCategory() {
+function DisplayAllSubCategory() {
   const classes = userStyles();
-  const [categoryList, setCategoryList] = useState([]);
+  const [subCategoryList, setCategoryList] = useState([]);
   const [open, setOpen] = useState(false);
 
-  /* -------------------------------------- Fetch all category Start ------------------------------------------ */
+  /* -------------------------------------- Fetch all subcategory Start ------------------------------------------ */
   const [categoryId, setCategoryId] = useState('');
-  const [categoryName, setCategoryName] = useState('');
+  const [subCategoryId, setSubCategoryId] = useState('');
+  const [subCategoryName, setSubCategoryName] = useState('');
   const [loadingStatus, setLoadingStatus] = useState(false);
-  const [categoryIcon, setCategoryIcon] = useState({ bytes: "", fileName: cart, });
+  const [subCategoryIcon, setSubCategoryIcon] = useState({ bytes: "", fileName: cart, });
   const [errorMessages, setErrorMessages] = useState({});
   const [hideUploadButton, setHideUploadButton] = useState(false);
   const [oldImage, setOldimage] = useState('');
@@ -44,14 +45,14 @@ function DisplayAllCategory() {
   // Validate the data
   const validateData = () => {
     var err = false
-    if (categoryName.length == 0) {
-      // setErrorMessages({...errorMessages,categoryName:'please input categoryname'});
-      handleErrorMessages('categoryName', 'please input categoryname');
+    if (subCategoryName.length == 0) {
+      // setErrorMessages({...errorMessages,subCategoryName:'please input subcategoryname'});
+      handleErrorMessages('subCategoryName', 'please input SubCategoryname');
       err = true;
 
     }
-    // if(categoryIcon.bytes.length==0){
-    //   handleErrorMessages('categoryIcon','please input categoryIcon');
+    // if(subCategoryIcon.bytes.length==0){
+    //   handleErrorMessages('subCategoryIcon','please input subCategoryIcon');
     //   err=true;
 
     // }
@@ -61,8 +62,8 @@ function DisplayAllCategory() {
 
   // Handle the image
   const handleImage = (e) => {
-    handleErrorMessages('categoryIcon', null);
-    setCategoryIcon({
+    handleErrorMessages('subCategoryIcon', null);
+    setSubCategoryIcon({
       bytes: e.target.files[0],
       fileName: URL.createObjectURL(e.target.files[0]),
     });
@@ -78,11 +79,14 @@ function DisplayAllCategory() {
             <div>
               <img src={logo} className={classes.imageStyle} />
             </div>
-            <div className={classes.headingStyle}>Category Register</div>
+            <div className={classes.headingStyle}>SubCategory Register</div>
           </div>
         </Grid>
         <Grid item xs={12}>
-          <TextField value={categoryName} onFocus={() => handleErrorMessages('categoryName', null)} error={errorMessages?.categoryName} helperText={errorMessages?.categoryName} onChange={(e) => setCategoryName(e.target.value)} label="Category Name" fullWidth />
+          <TextField onFocus={() => handleErrorMessages('categoryId', null)} error={errorMessages?.categoryId} helperText={errorMessages?.categoryId} value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category Id" fullWidth />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField value={subCategoryName} onFocus={() => handleErrorMessages('subCategoryName', null)} error={errorMessages?.subCategoryName} helperText={errorMessages?.subCategoryName} onChange={(e) => setSubCategoryName(e.target.value)} label="SubCategory Name" fullWidth />
         </Grid>
         <Grid item xs={6} className={classes.center}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -93,20 +97,20 @@ function DisplayAllCategory() {
                 <input onChange={handleImage} type="file" accept="image/*" hidden multiple />
               </Button>}
 
-            <div className={classes.errorMessageStyle}>{errorMessages?.categoryIcon != null ? errorMessages?.categoryIcon : <></>}</div>
+            <div className={classes.errorMessageStyle}>{errorMessages?.subCategoryIcon != null ? errorMessages?.subCategoryIcon : <></>}</div>
           </div>
         </Grid>
         <Grid item xs={6} className={classes.center}>
-          <Avatar src={categoryIcon.fileName} style={{ width: 70, height: 70 }} variant="rounded" />
+          <Avatar src={subCategoryIcon.fileName} style={{ width: 70, height: 70 }} variant="rounded" />
         </Grid>
       </Grid>
     );
   }
 
-  /*-------------------------- Fetch all category End -------------------------------------*/
+  /*-------------------------- Fetch all subcategory End -------------------------------------*/
 
-  const fetchAllCategory = async () => {
-    var result = await getData('category/display_all_category');
+  const fetchallSubCategory = async () => {
+    var result = await getData('subcategory/display_all_subcategory');
     if (result.status) {
       setCategoryList(result.data);
       console.log(result.data);
@@ -115,19 +119,23 @@ function DisplayAllCategory() {
     }
   }
   useEffect(() => {
-    fetchAllCategory();
+    fetchallSubCategory();
   }, [])
+
+
 
 
   // Dialog Box
   const handleOpenDialog = (rowData) => {
-    setCategoryId(rowData.categoryid);
-    setCategoryName(rowData.categoryname);
-    setCategoryIcon({ bytes: '', fileName: `${serverURL}/images/${rowData.categoryicon}` });
-    // setOldimage(`${serverURL}/images/${rowData.categoryicon}`);
-    setOldimage(rowData.categoryicon); // Only set the filename
-    setOpen(true);
-  };
+    setCategoryId(rowData.categoryid)
+    setSubCategoryId(rowData.subcategoryid)
+    setSubCategoryName(rowData.subcategoryname)
+    setSubCategoryIcon({ bytes: '', fileName: `${serverURL}/images/${rowData.subcategoryicon}` })
+    //  setOldimage(`${serverURL}/images/${rowData.subcategoryicon}`);
+    setOldimage(rowData.subcategoryicon); // Only set the filename
+    setOpen(true)
+
+  }
 
 
   const handleCloseDialog = () => {
@@ -136,7 +144,7 @@ function DisplayAllCategory() {
 
 
   const handleCancelIcon = () => {
-    setCategoryIcon({ bytes: '', fileName: oldImage })
+    setSubCategoryIcon({ bytes: '', fileName: oldImage })
     setHideUploadButton(false)
   }
 
@@ -146,10 +154,10 @@ function DisplayAllCategory() {
     if (err == false) {
 
       setLoadingStatus(true);
-      var body = { 'categoryid': categoryId, 'categoryname': categoryName, 'updated_at': currentDate(), 'user_admin': 'Shivam' };
+      var body = { 'subcategoryid': subCategoryId, 'subcategoryname': subCategoryName, 'updated_at': currentDate(), 'user_admin': 'Shivam' };
 
 
-      var result = await postData('category/edit_category_data', body);
+      var result = await postData('subcategory/edit_subcategory_data', body);
       if (result.status) {
         Swal.fire({
           position: "top-end",
@@ -172,53 +180,22 @@ function DisplayAllCategory() {
       }
       setLoadingStatus(false);
     }
-    fetchAllCategory();
+    fetchallSubCategory();
     // setOpen(false);
   }
 
 
   const handleEditIcon = async () => {
-    setLoadingStatus(true);
-    var formData = new FormData();
-    formData.append('categoryicon', categoryIcon.bytes);
-    formData.append('updated_at', currentDate());
-    formData.append('user_admin', 'Farzi');
-    formData.append('categoryid', categoryId);
+
+    setLoadingStatus(true)
+    var formData = new FormData()
+    formData.append('subcategoryicon', subCategoryIcon.bytes)
+    formData.append('updated_at', currentDate())
+    formData.append('user_admin', 'Farzi')
+    formData.append('subcategoryid', subCategoryId)
     formData.append('oldimage', oldImage); // Add oldimage to formData
 
-    var result = await postData('category/edit_category_icon', formData);
-    if (result.status) {
-      Swal.fire({
-        position: "top-end",
-        icon: "success",
-        title: result.message,
-        showConfirmButton: false,
-        timer: 2000,
-        toast: true
-      });
-    } else {
-      Swal.fire({
-        position: "top-end",
-        icon: "error",
-        title: result.message,
-        showConfirmButton: false,
-        timer: 2000,
-        toast: true
-      });
-    }
-    setLoadingStatus(false);
-    setHideUploadButton(false);
-
-    fetchAllCategory();
-  }
-
-  // delete category
-
-  const categoryDelete = async () => {
-    setLoadingStatus(true)
-    var body = { 'categoryid': categoryId }
-
-    var result = await postData('category/delete_category', body)
+    var result = await postData('subcategory/edit_subcategory_icon', formData)
     if (result.status) {
       Swal.fire({
         position: "top-end",
@@ -243,7 +220,41 @@ function DisplayAllCategory() {
     setLoadingStatus(false)
     setHideUploadButton(false)
 
-    fetchAllCategory()
+    fetchallSubCategory()
+  }
+
+  // delete subcategory
+
+  const categoryDelete = async () => {
+    setLoadingStatus(true)
+    var body = { 'subcategoryid': subCategoryId }
+
+    var result = await postData('subcategory/delete_subcategory', body)
+    if (result.status) {
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: result.message,
+        showConfirmButton: false,
+        timer: 2000,
+        toast: true
+      });
+
+    }
+    else {
+      Swal.fire({
+        position: "top-end",
+        icon: "error",
+        title: result.message,
+        showConfirmButton: false,
+        timer: 2000,
+        toast: true
+      });
+    }
+    setLoadingStatus(false)
+    setHideUploadButton(false)
+
+    fetchallSubCategory()
 
   }
 
@@ -260,7 +271,7 @@ function DisplayAllCategory() {
       if (result.isConfirmed) {
         categoryDelete();
       } else if (result.isDenied) {
-        Swal.fire("Category not deleted", "", "info");
+        Swal.fire("SubCategory not deleted", "", "info");
       }
     });
 
@@ -308,30 +319,31 @@ function DisplayAllCategory() {
   }
 
   // Material Table
-  function categoryTable() {
+  function subCategoryTable() {
     return (
       <div className={classes.root}>
         <div className={classes.displayBox}>
           <MaterialTable
-            title="Category List"
+            title="SubCategory List"
             columns={[
               { title: 'Category Id', field: 'categoryid' },
-              { title: 'Category Name', field: 'categoryname' },
-              { title: 'Category Icon', field: 'categoryicon' },
+              { title: 'SubCategory Id', field: 'subcategoryid' },
+              { title: 'SubCategory Name', field: 'subcategoryname' },
+              { title: 'SubCategory Icon', field: 'subcategoryicon' },
               { title: 'Created At / Updated At', render: (rowData) => <div style={{ display: 'flex', flexDirection: 'column' }}><div>{createDate(rowData.created_at)}</div><div>{createDate(rowData.updated_at)}</div></div> },
               // { title: 'Updated At', field: 'updated_at' },
               { title: 'User Admin', field: 'user_admin' },
-              { title: 'Icon', render: (rowData) => <img src={`${serverURL}/images/${rowData.categoryicon}`} style={{ width: 60, height: 50, borderRadius: 6 }} /> }
+              { title: 'Icon', render: (rowData) => <img src={`${serverURL}/images/${rowData.subcategoryicon}`} style={{ width: 60, height: 50, borderRadius: 6 }} /> }
             ]}
-            data={categoryList}
+            data={subCategoryList}
             options={{
               pageSize: 5,
-              pageSizeOptions: [5, 10, 15, { value: categoryList.length, label: 'All' }],
+              pageSizeOptions: [5, 10, 15, { value: subCategoryList.length, label: 'All' }],
             }}
             actions={[
               {
                 icon: 'edit',
-                tooltip: 'Edit Category',
+                tooltip: 'Edit SubCategory',
                 onClick: (event, rowData) => handleOpenDialog(rowData)
               }
             ]}
@@ -345,7 +357,7 @@ function DisplayAllCategory() {
   return (
     <>
       <div>
-        {categoryTable()}
+        {subCategoryTable()}
         {showCategoryDialog()}
       </div>
 
@@ -354,4 +366,4 @@ function DisplayAllCategory() {
 }
 
 
-export default DisplayAllCategory;
+export default DisplayAllSubCategory;

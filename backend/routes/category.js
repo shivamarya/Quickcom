@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var upload = require('./multer')
 var pool = require('./pool')
+const fs = require('fs');
 
 /* GET home page. */
 router.post('/category_submit', upload.single('categoryicon'), function (req, res, next) {
@@ -77,6 +78,15 @@ router.post('/edit_category_icon', upload.single('categoryicon'), function (req,
         res.status(200).json({ message: 'Database Error Pls contact with backend team...', status: false })
       }
       else {
+        if (req.body.oldimage && req.body.oldimage !== 'cart.png') { // Ensure oldimage is not the default image
+          fs.unlink(`public/images/${req.body.oldimage}`, function (err) {
+            if (err) {
+              console.log("Error",err)
+            } else {
+              console.log('Old image deleted');
+            }
+          });
+        }
         res.status(200).json({ message: 'Category icon updated successfully', status: true })
       }
 
@@ -84,7 +94,7 @@ router.post('/edit_category_icon', upload.single('categoryicon'), function (req,
 
   }
   catch (e) {
-
+    console.log(e);
     res.status(200).json({ message: 'Severe error on server pls contact with backend team', status: false })
   }
 });
